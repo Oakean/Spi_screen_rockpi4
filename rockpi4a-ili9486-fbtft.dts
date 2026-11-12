@@ -1,0 +1,62 @@
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "radxa,rockpi4a", "radxa,rockpi4", "rockchip,rk3399";
+
+	fragment@0 {
+		target = <&spi1>;
+		__overlay__ {
+			status = "okay";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			pinctrl-names = "default";
+			pinctrl-0 = <&spi1_clk &spi1_cs0 &spi1_rx &spi1_tx>;
+
+			/* Disable the board SPI NOR device using CS0, where LCD_CS sits. */
+			flash@0 {
+				reg = <0>;
+				status = "disabled";
+			};
+
+			display@0 {
+				compatible = "ilitek,ili9486";
+				reg = <0>;
+				status = "okay";
+				spi-max-frequency = <16000000>;
+
+				/* Values from GoodTFT LCD-show tft35a panel init.
+				 * FBTFT interprets 0x1xxxx as command and 0x2xxxx as delay. */
+				init = <
+					0x10000f1 0x36 0x04 0x00 0x3c 0x0f 0x8f
+					0x10000f2 0x18 0xa3 0x12 0x02 0xb2 0x12 0xff 0x10 0x00
+					0x10000f8 0x21 0x04
+					0x10000f9 0x00 0x08
+					0x1000036 0x08
+					0x10000b4 0x00
+					0x10000c1 0x41
+					0x10000c5 0x00 0x91 0x80 0x00
+					0x10000e0 0x0f 0x1f 0x1c 0x0c 0x0f 0x08 0x48 0x98 0x37 0x0a 0x13 0x04 0x11 0x0d 0x00
+					0x10000e1 0x0f 0x32 0x2e 0x0b 0x0d 0x05 0x47 0x75 0x37 0x06 0x10 0x03 0x24 0x20 0x00
+					0x100003a 0x55
+					0x1000011
+					0x1000036 0x28
+					0x20000ff
+					0x1000029
+				>;
+
+				txbuflen = <32768>;
+				rotate = <90>;
+				bgr = <0>;
+				fps = <30>;
+				buswidth = <8>;
+				regwidth = <16>;
+				debug = <0>;
+
+				reset-gpios = <&gpio4 29 1>; /* GPIO4_D5, header pin 22, active low */
+				dc-gpios = <&gpio4 28 0>;    /* GPIO4_D4, header pin 18, active high */
+			};
+		};
+	};
+};
